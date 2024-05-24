@@ -10,9 +10,9 @@ import pyNeuralEMPC as nEMPC
 
 
 @tf.function
-def model(x):        #  x - x*y ; -0.5 +   u  + x * y
-    #result = tf.concat([x[:,0:1] - x[:,0:1]*x[:,1:2], -1*x[:,1:2]+x[:,2:3] +x[:,0:1]*x[:,1:2]     ], axis=1)
-    result = tf.concat([x[:,2:3] , x[:,4:5]     ], axis=1)
+def model(x,u):        #  x - x*y ; -0.5*y +   u  + x * y
+    result = tf.concat([x[:,0:1] - x[:,0:1]*x[:,1:2], -0.5*x[:,1:2]+u +x[:,0:1]*x[:,1:2]     ], axis=1)
+    # result = tf.concat([x[:,2:3] , x[:,4:5]     ], axis=1)
 
     return result
 
@@ -20,16 +20,19 @@ def model(x):        #  x - x*y ; -0.5 +   u  + x * y
 class FakeModel:
 
     def __init__(self):
-        self.input_shape = (-1, 3 )
+        self.input_shape = (-1, 2)
         self.output_shape = (-1, 2)
 
     @tf.function
-    def __call__(self, x):
-        return tf.concat([x[:,2:3]*x[:,2:3] , x[:,5:6]*x[:,5:6]/2     ], axis=1)
+    def __call__(self, x,u):
+        # return tf.concat([x[:,2:3]*x[:,2:3] , x[:,5:6]*x[:,5:6]/2     ], axis=1)
+        return tf.concat([x[:, 0:1] - x[:, 0:1] * x[:, 1:2], -0.5 * x[:, 1:2] + u + x[:, 0:1] * x[:, 1:2]])
 
     @tf.function
-    def predict(self, x):
-        return tf.concat([x[:,2:3]*x[:,2:3] , x[:,5:6]*x[:,5:6]/2     ], axis=1)
+    def predict(self, x,u):
+        # return tf.concat([x[:,2:3]*x[:,2:3] , x[:,5:6]*x[:,5:6]/2     ], axis=1)
+        return tf.concat([x[:, 0:1] - x[:, 0:1] * x[:, 1:2], -0.5 * x[:, 1:2] + u + x[:, 0:1] * x[:, 1:2]])
+
 
 fake = FakeModel()
 
@@ -57,15 +60,12 @@ class LotkaCost:
         self.cost_vec = cost_vec
 
     def __call__(self, x, u, p=None, tvp=None):
-        return jnp.sum(jnp.square(u.reshape(-1)-2.0))
+        return jnp.sum(u.reshape(-1)*self.cost_vec.reshape(-1))
 
 
-cost_func = LotkaCost(jnp.array([1.1,]*25))
+cost_func = LotkaCost(jnp.array([1.1,]*H))
 DT  = 1
-integrator = nEMPC.integrator.discret.DiscretIntegrator(test, H)
-
-
-
+integrator = nEMPC.integrator.discret.DiscretIntegrator(model, H)
 
 
 constraints_nmpc = [nEMPC.constraints.DomainConstraint(
@@ -77,3 +77,5 @@ objective_func = nEMPC.objective.jax.JAXObjectifFunc(cost_func)
 MPC = nEMPC.controller.NMPC(integrator, objective_func, constraints_nmpc, H, DT)
 
 pred, u  = MPC.next(x_past.reshape(-1))
+print("***************计算完成*******************")
+print(pred,u)

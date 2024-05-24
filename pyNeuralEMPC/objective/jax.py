@@ -36,7 +36,7 @@ class JAXObjectifFunc(ObjectiveFunc):
         grad_u = jax.grad(self.func, argnums=1)(states, u, p, tvp).reshape(-1)
 
         result_list = [grad_states, grad_u]
-        final_res = jnp.concatenate(result_list, axis=0).to_py()
+        final_res = jnp.concatenate(result_list, axis=0)#.to_py()
         final_res = jnp.nan_to_num(final_res, nan=0.0)
         return final_res
 

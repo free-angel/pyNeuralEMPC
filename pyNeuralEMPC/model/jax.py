@@ -58,7 +58,7 @@ class DiffDiscretJaxModel(Model):
             jacobians[0] = jacobians[0].reshape(self.x_dim*x.shape[0], self.x_dim*x.shape[0] )
             jacobians[1] = jacobians[1].reshape(self.x_dim*x.shape[0], self.u_dim*x.shape[0] )
 
-            jaco =  jnp.concatenate(jacobians, axis=1).to_py()
+            jaco =  jnp.concatenate(jacobians, axis=1)#.to_py()
             return jaco
         else:
             raise NotImplementedError("")

@@ -9,8 +9,8 @@ args = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
-from dyna_toy_envs.virtuel.lotka_volterra import lotka_volterra_energy
-from dyna_toy_envs.display import plot_experience
+# from dyna_toy_envs.virtuel.lotka_volterra import lotka_volterra_energy
+# from dyna_toy_envs.display import plot_experience
 import numpy as np
 import matplotlib.patches as mpatches
 
@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import pyNeuralEMPC as nEMPC
 
 #from utils import *
-import progressbar
+# import progressbar
 import pysindy
 import numpy as np 
 import jax.numpy as jnp
@@ -34,7 +34,6 @@ import pickle
 # u = u/50.0 - 1
 
 
-
 NB_STEPS = 700
 Hb = 25
 U_MAX = 60
@@ -46,17 +45,17 @@ X_MAX = 60
 
 
 X_MAX = X_MAX/30.0 - 1
-U_MAX = U_MAX/50.0 -1 
-U_MIN = U_MIN/50.0 -1 
+U_MAX = U_MAX/50.0 - 1
+U_MIN = U_MIN/50.0 - 1
 
 H = Hb
 
-system = lotka_volterra_energy(dt=DT, init_state=np.array([0.66, -0.9]), H=Hb)
+# system = lotka_volterra_energy(dt=DT, init_state=np.array([0.66, -0.9]), H=Hb)
 
 keras_model = tf.keras.models.load_model("./nn_model.h5")
 
 
-input_tensor = tf.constant(np.array([[50.0,5.0,0.0],[50.0,5.0,0.0]]))
+# input_tensor = tf.constant(np.array([[50.0,5.0,0.0],[50.0,5.0,0.0]]))
 
 
 
@@ -66,14 +65,14 @@ def forward_jnp(x, u, p=None, tvp=None):
     return result
 
 model_nmpc = nEMPC.model.tensorflow.KerasTFModel(keras_model, x_dim=2, u_dim=1)
-model_nmpc = nEMPC.model.jax.DiffDiscretJaxModel(forward_jnp, x_dim=2, u_dim=1, vector_mode=True)
+# model_nmpc = nEMPC.model.jax.DiffDiscretJaxModel(forward_jnp, x_dim=2, u_dim=1, vector_mode=True)
 
 
 constraints_nmpc = [nEMPC.constraints.DomainConstraint(
     states_constraint=[[-np.inf, X_MAX], [-np.inf, np.inf]],
     control_constraint=[[U_MIN, U_MAX]]),]
 
-integrator = nEMPC.integrator.discret.DiscretIntegrator(model_nmpc, H)
+# integrator = nEMPC.integrator.discret.DiscretIntegrator(model_nmpc, H)
 integrator = nEMPC.integrator.rk4.RK4Integrator(model_nmpc, H, 0.1, cache_mode=True)
 
 class LotkaCost:
@@ -84,19 +83,20 @@ class LotkaCost:
         return jnp.sum(u.reshape(-1)*self.cost_vec.reshape(-1))
 
 
-cost_func = LotkaCost(jnp.array([1.1,]*25))
+cost_func = LotkaCost(jnp.array([1.1,]*H))
 
 objective_func = nEMPC.objective.jax.JAXObjectifFunc(cost_func)
 
 
 MPC = nEMPC.controller.NMPC(integrator, objective_func, constraints_nmpc, H, DT)
 
-curr_x, curr_cost = system.get_init_state()
+# curr_x, curr_cost = system.get_init_state()
 
 
 
-u, pred = MPC.next(curr_x)
-1/0
+u, pred = MPC.next(np.array([[0.2,0.1]]).reshape(-1))
+print(u.shape,pred.shape)
+# 1/0
 """
 controller = NNLokeMPC(keras_model, DT, Hb, max_state=[X_MAX+0.0001, 1e20], u_min=U_MIN, u_max=U_MAX, derivative_model=False)
 
