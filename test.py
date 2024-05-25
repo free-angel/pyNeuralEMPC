@@ -29,13 +29,13 @@ class FakeModel:
         return tf.concat([x[:, 0:1] - x[:, 0:1] * x[:, 1:2], -0.5 * x[:, 1:2] + u + x[:, 0:1] * x[:, 1:2]])
 
     @tf.function
-    def predict(self, x,u):
+    def predict(self, x):
+        # 这里的x已经融合[x,u]
         # return tf.concat([x[:,2:3]*x[:,2:3] , x[:,5:6]*x[:,5:6]/2     ], axis=1)
-        return tf.concat([x[:, 0:1] - x[:, 0:1] * x[:, 1:2], -0.5 * x[:, 1:2] + u + x[:, 0:1] * x[:, 1:2]])
+        return tf.concat([x[:, 0:1] - x[:, 0:1] * x[:, 1:2], -0.5 * x[:, 1:2] + x[:,2:] + x[:, 0:1] * x[:, 1:2]])
 
 
 fake = FakeModel()
-
 
 
 
