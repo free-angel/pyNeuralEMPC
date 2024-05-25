@@ -20,7 +20,7 @@ def model(x,u):        #  x - x*y ; -0.5*y +   u  + x * y
 class FakeModel:
 
     def __init__(self):
-        self.input_shape = (-1, 2)
+        self.input_shape = (-1, 3)
         self.output_shape = (-1, 2)
 
     @tf.function
